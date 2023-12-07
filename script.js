@@ -1,16 +1,23 @@
-const APIKEY = "1bd1b4366bda8689f7157f4cd6e802aa";
-const APIURL = "https://api.openweathermap.org/data/2.5/weather?units=metric&q=";
+
+const W_APIKEY = "1bd1b4366bda8689f7157f4cd6e802aa";
+const W_APIURL = "https://api.openweathermap.org/data/2.5/weather?units=metric&lang=en&q=";
+
+const T_APIKEY = "4FEGIXOH28Z0";
+const T_APIURL = "https://api.timezonedb.com/v2.1/get-time-zone?key=4FEGIXOH28Z0&format=json&by=position"
+
 
 const searchBox = document.querySelector(".search input")
 const searchBtn = document.querySelector(".search button")
 const weatherIcon = document.querySelector(".weather-icon")
+
 async function checkWeather(city){
 
-    const response = await fetch(APIURL + city + `&appid=${APIKEY}`)
+    const response = await fetch(W_APIURL + city + `&appid=${W_APIKEY}`)
 
     const data = await response.json()
 
-    if(response.status == "404"){
+
+    if(response.status === "404"){
         document.querySelector(".error").style.display = "block"
         document.querySelector(".weather").style.display = "none"
     }
@@ -43,9 +50,32 @@ async function checkWeather(city){
         document.querySelector(".error").style.display = "none";
     }
 
+    return data
+}
+
+async function getTimezone(city){
+
+    const w_data = await checkWeather(city)
+    
+    const response = await fetch(T_APIURL + `&lat=${w_data.coord.lat}&lng=${w_data.coord.lon}`)
+
+    const data = await response.json()
+
+    console.log(data)
+
+    const datetime = data.formatted
+
+    const [date , time] = datetime.split(" ")
+
+    const formattedDate = new Date(date).toLocaleDateString('en-GB').split('-').reverse().join('-');
+
+
+    document.querySelector(".date").innerHTML = formattedDate;
+    document.querySelector(".time").innerHTML = time;
 
 }
 
-searchBtn.addEventListener("click" , ()=>{
-    checkWeather(searchBox.value);
+searchBtn.addEventListener("click" , async ()=>{
+   await checkWeather(searchBox.value);
+   await getTimezone(searchBox.value);
 })
